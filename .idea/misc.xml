@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (trailsApi)" project-jdk-type="Python SDK" />
+<<<<<<< HEAD
   <component name="PyCharmProfessionalAdvertiser">
     <option name="shown" value="true" />
   </component>
+=======
+>>>>>>> b99369df08a7dec6fd10b37d9ef1eb150aa45852
 </project>
