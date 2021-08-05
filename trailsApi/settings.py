@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
+import socket
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'api',
     'django_rest_passwordreset',
+    'drf_yasg',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -65,7 +67,7 @@ ROOT_URLCONF = 'trailsApi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [str(BASE_DIR) + '/templates/', ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,9 +146,16 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mailer.porsa.co.za'
-EMAIL_PORT = 465
+# EMAIL_USE_TLS = True
+# EMAIL_HOST = 'ns1.web-x.co.za'
+# EMAIL_PORT = 465
+# EMAIL_HOST_USER = 'do_not_reply@mailer.porsa.co.za'
+# EMAIL_HOST_PASSWORD = 'iO0SXfA-NQS&_@[0P6s-sCCG'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'do_not_reply@mailer.porsa.co.za'
-EMAIL_HOST_PASSWORD = 'iO0SXfA-NQS&_@[0P6s-sCCG'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'francoisjoubert84@gmail.com'
+EMAIL_HOST_PASSWORD = 'fran5048FRAN%)$*'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

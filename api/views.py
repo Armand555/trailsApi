@@ -1,14 +1,11 @@
 import random
 
-from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.db.models import Count
 from django.http import JsonResponse
-from django.shortcuts import redirect
 from django.utils import timezone
-from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import generics, status, permissions
@@ -16,10 +13,10 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from .models import Listing, Claim, UserTrailLinking
+from .models import Listing, Claim, UserTrailLinking, UserProfile
 from .serializers import NormalListingsSerializer, PremiumListingSerializer, ClaimSerializer, UserTrailLinkSerializer, \
     MyTrailsSerializer, AddPremiumListingSerializer, AddFreeListingSerializer, ChangePasswordSerializer, \
-    RequestPasswordResetEmailSerializer
+    RequestPasswordResetEmailSerializer, SetNewPasswordSerializer, CountMyTrailsSerializer, InvoiceDetailsSerializer
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
@@ -38,7 +35,10 @@ def signup(request):
             user = User.objects.create_user(data['username'], password=data['password'])
             user.save()
             token = Token.objects.create(user=user)
-            return JsonResponse({'token': str(token)}, status=201)
+            return JsonResponse({'token': str(token),
+                                 'message': 'Your account was successfully created.'
+                                            ' You may now login, no need for activation'},
+                                status=201)
         except IntegrityError:
             return JsonResponse({'error': 'That username has already been taken.'}, status=400)
 
@@ -109,14 +109,36 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             email_body = 'Hello, \n Use link below to reset your password  \n' + \
                          absurl + "?redirect_url=" + redirect_url
             data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': 'Reset your passsword'}
+                    'email_subject': 'Reset your password'}
             Util.send_email(data)
         return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
 
 
 class PasswordTokenCheckAPI(generics.GenericAPIView):
     def get(self, request, uidb64, token):
-        pass
+
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'error': 'Token is not valid, please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'success': True, 'message': 'Credentials Valid', 'uidb64': uidb64, 'token': token},
+                            status=status.HTTP_200_OK)
+        except DjangoUnicodeDecodeError as identifier:
+            if not PasswordResetTokenGenerator().check_token(user):
+                return Response({'error': 'Token is not valid, please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
 
 
 class ListingsFree(generics.ListAPIView):
@@ -218,6 +240,29 @@ class MyTrails(generics.ListAPIView):
         return links
 
 
+class MyFreeTrails(generics.ListAPIView):
+    serializer_class = CountMyTrailsSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        links = UserTrailLinking.objects.values_list('trail', flat=True)
+        trail = Listing.objects.filter(pk__in=links, premium=False)
+        return trail
+
+# def premium_rate(request):
+#     total_trails = MyTrails()
+#     if total_trails == 1:
+#         price_per_trail = 600
+#     elif total_trails == 2:
+#         price_per_trail = 540
+#     elif total_trails == 3:
+#         price_per_trail = 480
+#     else:
+#         price_per_trail = 420
+#
+#     return price_per_trail
+
+
 class ReleaseMyTrail(generics.DestroyAPIView):
     queryset = UserTrailLinking.objects.all()
     serializer_class = MyTrailsSerializer
@@ -226,6 +271,15 @@ class ReleaseMyTrail(generics.DestroyAPIView):
     def delete(self, request, *args, **kwargs):
         UserTrailLinking.objects.filter(pk=kwargs['pk']).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class InvoiceDetails(generics.ListAPIView):
+    serializer_class = InvoiceDetailsSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        id_num = self.kwargs['id']
+        return UserProfile.objects.filter(user=id_num)
 
 
 class AddPremiumListing(generics.CreateAPIView):

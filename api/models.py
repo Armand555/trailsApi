@@ -3,27 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
-from django.dispatch import receiver
-from django.urls import reverse
-from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import send_mail
-
-
-@receiver(reset_password_token_created)
-def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'),
-                                                   reset_password_token.key)
-
-    send_mail(
-        # title:
-        "Password Reset for {title}".format(title="Some website title"),
-        # message:
-        email_plaintext_message,
-        # from:
-        "noreply@somehost.local",
-        # to:
-        [reset_password_token.user.email]
-    )
 
 
 class Listing(models.Model):
@@ -150,13 +129,18 @@ class UserProfile(models.Model):
     reg_no = models.CharField(max_length=14, blank=True)
     vat_no = models.CharField(max_length=10, blank=True)
 
-    def __str__(self):
-        return self.user
-
 
 class Claim(models.Model):
     trail_id = models.IntegerField(blank=False)
     user_id = models.IntegerField(blank=False)
     trail_email = models.EmailField(max_length=256, blank=True)
+    claim_token = models.IntegerField(unique=True, default=False)
+    claim_expiry = models.DateTimeField(default=timezone.now() + timedelta(days=1))
+
+
+class Invoice(models.Model):
+    invoice_num = models.IntegerField(blank=False)
+    user_id = models.IntegerField(blank=False)
+    trails = models.EmailField(max_length=256, blank=True)
     claim_token = models.IntegerField(unique=True, default=False)
     claim_expiry = models.DateTimeField(default=timezone.now() + timedelta(days=1))
