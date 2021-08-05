@@ -1,22 +1,21 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.views.generic import TemplateView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from api import views
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="SA Hiking Trails API",
-      default_version='v1',
-      description="Test description",
-      terms_of_service="https://www.sahikingtrails.co.za/policies/terms/",
-      contact=openapi.Contact(email="contact@sahikingtrails.co.za"),
-      license=openapi.License(name="BSD License"),
-   ),
-   public=True,
-   permission_classes=(permissions.IsAuthenticated,),
+    openapi.Info(
+        title="SA Hiking Trails API",
+        default_version='v1',
+        description="Test description",
+        terms_of_service="https://www.sahikingtrails.co.za/policies/terms/",
+        contact=openapi.Contact(email="contact@sahikingtrails.co.za"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.IsAuthenticated,),
 )
 
 urlpatterns = [
@@ -57,8 +56,6 @@ urlpatterns = [
     path('password-reset/<uidb64>/<token>/', views.PasswordTokenCheckAPI.as_view(), name='password-reset-confirm'),
     path('password-reset-complete', views.SetNewPasswordAPIView.as_view(), name='password-reset-complete'),
 
-
-
     path('api/signup', views.signup),
     path('api/login', views.login),
 
@@ -66,4 +63,3 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
 ]
-

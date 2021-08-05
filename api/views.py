@@ -3,7 +3,6 @@ import random
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.db.models import Count
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +18,7 @@ from .serializers import NormalListingsSerializer, PremiumListingSerializer, Cla
     RequestPasswordResetEmailSerializer, SetNewPasswordSerializer, CountMyTrailsSerializer, InvoiceDetailsSerializer
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -248,6 +247,7 @@ class MyFreeTrails(generics.ListAPIView):
         links = UserTrailLinking.objects.values_list('trail', flat=True)
         trail = Listing.objects.filter(pk__in=links, premium=False)
         return trail
+
 
 # def premium_rate(request):
 #     total_trails = MyTrails()

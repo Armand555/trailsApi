@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Listing, UserTrailLinking, UserProfile, Claim
+from .models import Listing, UserTrailLinking, UserProfile, Claim, Invoice
 
 admin.site.register(UserProfile)
 admin.site.register(Claim)
+admin.site.register(Invoice)
 
 
 @admin.register(Listing)

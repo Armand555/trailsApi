@@ -140,7 +140,9 @@ class Claim(models.Model):
 
 class Invoice(models.Model):
     invoice_num = models.IntegerField(blank=False)
-    user_id = models.IntegerField(blank=False)
-    trails = models.EmailField(max_length=256, blank=True)
-    claim_token = models.IntegerField(unique=True, default=False)
-    claim_expiry = models.DateTimeField(default=timezone.now() + timedelta(days=1))
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    total = models.IntegerField(blank=False)
+    invoice_date = models.DateTimeField(default=timezone.now())
+    paid = models.BooleanField(default=False)
+    trails = models.TextField(blank=False)
+    invoice_url = models.ImageField(upload_to='invoice/', blank=True)
