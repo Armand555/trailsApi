@@ -1,4 +1,11 @@
-/.idea
-/venv
+.idea/
 /db.sqlite3
 /manage.py
+
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
